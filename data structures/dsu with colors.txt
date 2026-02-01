@@ -1,0 +1,43 @@
+struct dsu {
+    int sz;
+    vector<int> parent, group, color;
+    dsu(int n) {
+        sz = n;
+        parent.resize(n + 1);
+        group.assign(n + 1, 1);
+        color.assign(n + 1, 0);
+        iota(parent.begin(), parent.end(), 0);
+    }
+    int find(int v) {
+        if (v == parent[v]) return v;
+        int p = parent[v];
+        parent[v] = find(parent[v]);
+        color[v] ^= color[p];
+        return parent[v];
+    }
+    bool check(int v, int u) {
+        return find(v) == find(u);
+    }
+    bool sameColor(int u, int v) {
+        if (find(u) != find(v)) return false;
+        return color[u] == color[v];
+    }
+    bool merge(int v, int u) {
+        int ru = find(u);
+        int rv = find(v);
+        if (ru == rv) return false;
+
+        if (group[ru] < group[rv]) {
+            swap(ru, rv);
+            swap(u, v);
+        }
+
+        parent[rv] = ru;
+        color[rv] = color[u] ^ color[v] ^ 1;
+        group[ru] += group[rv];
+        return true;
+    }
+    int getSize(int v) {
+        return group[find(v)];
+    }
+};

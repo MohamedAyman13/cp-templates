@@ -1,0 +1,86 @@
+struct floyd {
+    vector<vector<ll>> min_dist;
+    vector<vector<bool>> infinite;
+    vector<vector<int>> nxt;
+    int n;
+    floyd(int n) {
+        this->n = n;
+        min_dist.resize(n + 1, vector<ll>(n + 1, 1e18));
+        nxt.assign(n + 1, vector<int>(n + 1, -1));
+        infinite.resize(n + 1, vector<bool>(n + 1, false));
+    }
+    void init(int u, int v, ll w) {
+        if (w < min_dist[u][v]) { 
+            min_dist[u][v] = min_dist[v][u] = w; 
+            nxt[u][v] = v;
+            nxt[v][u] = u;
+        }
+    }
+    void magic() {
+        for (int i = 1; i <= n; i++) {
+            min_dist[i][i] = 0;
+            nxt[i][i] = i;
+        }
+        // if you want faster logic but without path reconstruction
+        /////////////////////////////////////////////////////////////
+        // for (int k = 1; k <= n; k++) {
+        //     for (int i = 1; i <= n; i++) {
+        //         for (int j = i + 1; j <= n; j++) {
+        //             ll new_dist = min_dist[i][k] + min_dist[k][j];
+        //             if (new_dist < min_dist[i][j]) {
+        //                 min_dist[i][j] = min_dist[j][i] = new_dist;
+        //             }
+        //         }
+        //     }
+        // }
+
+        // slower but we can reconstruct the path again
+        for (int k = 1; k <= n; k++) {
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= n; j++) {
+                    if (min_dist[i][k] == 1e18 || min_dist[k][j] == 1e18) continue;
+                    ll new_dist = min_dist[i][k] + min_dist[k][j];
+                    if (new_dist < min_dist[i][j]) {
+                        min_dist[i][j] = new_dist;
+                        nxt[i][j] = nxt[i][k];
+                    }
+                }
+            }
+        }
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (min_dist[i][j] == 1e18) {
+                    min_dist[i][j] = -1;
+                }
+            }
+        }
+    }
+    vector<int> get_path(int u, int v) {
+        if (nxt[u][v] == -1) return {};
+
+        vector<int> path;
+        path.push_back(u);
+        while (u != v) {
+            u = nxt[u][v];
+            path.push_back(u);
+        }
+        return path;
+    }
+    // to check the cycles in the directed graph
+    void cycleCheck() {
+        vector<int> cyc;
+        for (int k = 0; k < n; k++) {
+            if (min_dist[k][k] > 0) cyc.push_back(k);
+        }
+        for (int k : cyc) {
+            for (int i = 0; i < n; i++) {
+                if (min_dist[i][k] == 0) continue;
+                for (int j = 0; j < n; j++) {
+                    if (min_dist[k][j] == 0) continue;
+                    infinite[i][j] = true;
+                }
+            }
+        }
+    }
+};

@@ -1,0 +1,17 @@
+1- to check if an edge(u,v) is used for in any shortest path you can loop the whole nodes and check if dist[u][k] + dist[k][v] <= w so this edge isn't used in any of the shortest pathes here is a code to solve it
+
+for (int k = 1; k <= n; k++) {
+    if (k == u || k == v) continue;
+    if (f.min_dist[u][k] + f.min_dist[k][v] <= w) {
+	   // there is a better path for u and v instead of w so we can remove it
+           break;
+    }
+} 
+
+2- if you have something and you want to spread out to all other nodes and you have starting point so the total time to do that is just to take the maximum of (min_dist[start_point][any point in the graph])
+and if you have start point and end point you will take the maximum for (min_dist[start_point][k] + min_dist[k][end_point])
+
+3- if you want to make a cycle and visit every edges in the graph you will add all edges sizes and then check for nodes that its degree is odd and make a bitmask dp to choose the minimum distance combination for the nodes with odd degree
+
+4- to check if an edge contribute to some pathes you will use this formula 
+(min_dist[i][u] + min_dist[v][j] + min_dist[u][v] == min_dist[i][j])

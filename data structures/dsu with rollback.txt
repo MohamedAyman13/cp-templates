@@ -1,0 +1,47 @@
+struct dsu {
+    int sz, cnt;
+    vector<int> parent, group;
+    stack<array<int, 4>> st;
+    dsu(int n) {
+        sz = n;
+        cnt = n;
+        parent.resize(n + 1);
+        group.assign(n + 1, 1);
+        iota(parent.begin(), parent.end(), 0);
+    }
+    int find(int v) {
+        if (v == parent[v]) return v;
+        return find(parent[v]);
+    }
+    bool check(int v, int u) {
+        return find(v) == find(u);
+    }
+    bool merge(int v, int u) {
+        v = find(v);
+        u = find(u);
+        st.push({-1, -1, -1, -1});
+        if (v == u) return false;
+        st.pop();
+        if (group[u] < group[v]) swap(u, v);
+        st.push({v, parent[v], u, group[u]});
+        parent[v] = u;
+        group[u] += group[v];
+        cnt--;
+        return true;
+    }
+    void addCheckPoint() {
+        st.push({-2, -2, -2, -2});
+    }
+    void rollback() {
+        array<int, 4> cur = st.top();
+        st.pop();
+        // cur[0] = -1 if there is no merge happens cur[0] = -2 if there is a check point
+        if(cur[0] == -1 || cur[0] == -2) return;
+        parent[cur[0]] = cur[1];
+        group[cur[2]] = cur[3];
+        cnt++;
+    }
+    int getSize(int v) {
+        return group[find(v)];
+    }
+};
