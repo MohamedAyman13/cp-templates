@@ -1,8 +1,11 @@
 struct kmp{
     vector<int> ans, pi;
+    vector<vector<int>> aut;
+    bool ok;
     kmp() {
         const int N = 1e6 + 5;
         pi.resize(N);
+        ok = false;
     }
     vector<int> calcPrefix(string s) {
         int n = s.size();
@@ -22,5 +25,24 @@ struct kmp{
             if(s[i] == s2[k]) k++;
             if(k == m) ans.push_back(i - m + 1), k = pi[k - 1];
         }
+    }
+    void build_automaton(string s) {
+        int m = s.size();
+        aut.assign(m + 1, vector<int>(26));
+        if (!ok) calcPrefix(s);
+        for (int i = 0; i <= m; i++) {
+            for (int c = 0; c < 26; c++) {
+                char ch = ('a' + c);
+                if (i < m && ch == s[i]) aut[i][c] = i + 1;
+                else if (i > 0) aut[i][c] = aut[pi[i - 1]][c];
+                else aut[i][c] = (ch == s[0] ? 1 : 0);
+            }
+        }
+    }
+    void calcSubstrings(int n) {
+        vector<int> ans(n + 1);
+        for (int i = 0; i < n; i++) ans[pi[i]]++;
+        for (int i = n - 1; i > 0; i--) ans[pi[i-1]] += ans[i];
+        for (int i = 0; i <= n; i++) ans[i]++;
     }
 };

@@ -1,0 +1,60 @@
+const int N = 100005 * 50;
+int cnt = 0;
+
+struct Node {
+    Node * l, * r;
+    ll val;
+    Node() : l(nullptr), r(nullptr), val(0) {}
+    void set(ll x) { val = x; }
+} pool[N];
+
+Node * getL(Node * x) { return x == nullptr ? x : x->l; }
+Node * getR(Node * x) { return x == nullptr ? x : x->r; }
+ll getVal(Node * x) { return x == nullptr ? 0 : x->val; }
+
+Node * newNode() {
+    return &pool[++cnt]; 
+}
+
+Node * leaf(ll val) {
+    Node * res = newNode();
+    res->val = val;
+    return res;
+}
+
+Node * par(Node * l, Node * r) {
+    Node * res = newNode();
+    res->l = l, res->r = r;
+    res->val = getVal(l) + getVal(r);
+    return res;
+}
+
+int n;
+
+Node * build(vector<int> & a, int l = 0, int r = n - 1) {
+    if (l == r) return leaf(a[l]);
+    int md = l + (r - l) / 2;
+    return par(build(a, l, md), build(a, md + 1, r));
+}
+
+Node * update(int idx, int val, Node * x, int l = -N, int r = N) {
+    if (l == r) return leaf(val);
+    int md = l + (r - l) / 2;
+    if (idx <= md) return par(update(idx, val, getL(x), l, md), getR(x));
+    else return par(getL(x), update(idx, val, getR(x), md + 1, r));
+}
+
+ll query(int lq, int rq, Node * x, int l = -N, int r = N) {
+    if (l > rq || r < lq) return 0;
+    if (l >= lq && r <= rq) return getVal(x);
+    int md = l + (r - l) / 2;
+    return query(lq, rq, getL(x), l, md) + query(lq, rq, getR(x), md + 1, r);
+}
+
+ll kth(int k, Node * x, int l = -N, int r = N) {
+    if (l == r) return l;
+    int md = l + (r - l) / 2;
+    ll smL = getVal(getL(x));
+    if (k <= smL) return kth(k, getL(x), l, md);
+    else return kth(k - smL, getR(x), md + 1, r);
+}

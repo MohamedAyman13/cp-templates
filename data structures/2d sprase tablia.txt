@@ -1,0 +1,64 @@
+const int N = 1005;
+int Log[N];
+
+struct tabliaMometa {
+    int n, m;
+    int pwx, pwy;
+    vector<vector<vector<vector<short>>>> tablia;
+    vector<vector<short>> a;
+    tabliaMometa(short n, short m, vector<vector<short>> &grid) {
+        this->n = n;
+        this->m = m;
+        a = grid;
+        pwx = Log[n];
+        pwy = Log[m];
+        tablia.resize(pwx + 1, vector<vector<vector<short>>>(pwy + 1,vector<vector<short>>(n, vector<short>(m))));
+    }
+
+    short merge(short a, short b) {
+        return max(a, b);
+    }
+
+    void build() {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                tablia[0][0][i][j] = a[i][j];
+            }
+        }
+        for (int ky = 1; ky <= pwy; ky++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j + (1 << ky) <= m; j++) {
+                    tablia[0][ky][i][j] = merge(tablia[0][ky - 1][i][j], tablia[0][ky - 1][i][j + (1 << (ky - 1))]);
+                }
+            }
+        }
+        for (int kx = 1; kx <= pwx; kx++) {
+            for (int i = 0; i + (1 << kx) <= n; i++) {
+                for (int j = 0; j < m; j++) {
+                    for (int ky = 0; ky <= pwy; ky++) {
+                        tablia[kx][ky][i][j] = merge(tablia[kx - 1][ky][i][j], tablia[kx - 1][ky][i + (1 << (kx - 1))][j]);
+                    }
+                }
+            }
+        }
+    }
+
+    short query(int x1, int y1, int x2, int y2) {
+        int lenx = x2 - x1 + 1;
+        int leny = y2 - y1 + 1;
+        int kx = Log[lenx];
+        int ky = Log[leny];
+        
+        short m1 = merge(tablia[kx][ky][x1][y1], tablia[kx][ky][x2 - (1 << kx) + 1][y1]);
+        short m2 = merge(tablia[kx][ky][x1][y2 - (1 << ky) + 1], tablia[kx][ky][x2 - (1 << kx) + 1][y2 - (1 << ky) + 1]);
+        
+        return merge(m1, m2);
+    }
+};
+
+void preCount() {
+    Log[1] = 0;
+    for (int i = 2; i < N; i++) {
+        Log[i] = Log[i >> 1] + 1;
+    }
+}

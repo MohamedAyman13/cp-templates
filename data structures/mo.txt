@@ -1,0 +1,89 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define MOD 1000000007
+#define INF 1e9 + 5
+
+int n, m, sq; 
+
+struct coordinateCompression {
+private:
+    vector<ll> values;      // unique sorted values
+
+public:
+    vector<ll> c;  // final compressed array
+    coordinateCompression(vector<ll>& v) {
+        values = v;
+        sort(values.begin(), values.end());
+        values.erase(unique(values.begin(), values.end()), values.end());
+        // build mapping
+        for (ll x : v) {
+            int idx = lower_bound(values.begin(), values.end(), x) - values.begin();
+            c.push_back(idx);
+        }
+    }
+    // original -> compressed
+    int index(ll val) {
+        return lower_bound(values.begin(), values.end(), val) - values.begin();
+    }
+    // compressed -> original
+    ll initVal(int idx) {
+        return values[idx];
+    }
+};
+
+struct q {
+    int l, r, i;
+    bool operator<(const q &b) const {
+        if (l / sq != b.l / sq) return l < b.l;
+        return ((l / sq) & 1) ? r > b.r : r < b.r;
+    }
+};
+
+void solve() {
+    cin >> n >> m;
+    sq = sqrt(n) + 1;
+    vector<ll> a(n);
+    for (ll i = 0; i < n; i++) cin >> a[i];
+    coordinateCompression c(a);
+    vector<q> b(m);
+    for (int i = 0; i < m; i++) {
+        cin >> b[i].l >> b[i].r;
+        b[i].l--; 
+        b[i].r--;
+        b[i].i = i;
+    }
+    sort(b.begin(), b.end());
+    vector<ll> freq(n + 1);
+    ll cur = 0;
+    auto add = [&] (int idx) {
+
+    };
+    auto remove = [&] (int idx) {
+
+    };
+    auto query = [&] () {
+
+    };
+
+    vector<ll> ans(m);
+    int l = 0, r = -1;
+    for (int i = 0; i < m; i++) {
+        while(r < b[i].r) add(++r);
+        while(l > b[i].l) add(--l);
+        while(r > b[i].r) remove(r--);
+        while(l < b[i].l) remove(l++);
+        ans[b[i].i] = query();
+    }
+    for (int i = 0; i < m; i++) cout << ans[i] << '\n';
+}
+
+int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(nullptr); cout.tie(nullptr);
+    int t = 1;
+    // cin >> t;
+    while(t--) {
+        solve();
+    }
+}

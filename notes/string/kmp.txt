@@ -1,0 +1,5 @@
+1- if there are two strings each of them are equal and when they were concatenated they overlap
+like abca + abca = abcabca they overlap on a so to check if they are really overlapped or not so we will make LPS array and check for
+every valid prefix length from the largest to the smallest if 2 * prefix length > the whole size of the string so there is an overlap
+happend and the original string is from index 0 to the value of the prefix
+

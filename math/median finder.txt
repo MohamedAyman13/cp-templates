@@ -1,0 +1,30 @@
+struct MedianFinder {
+    priority_queue<int> a;
+    priority_queue<int, vector<int>, greater<int>> b;
+
+    MedianFinder() {
+
+    }
+
+    void addNum(int num) {
+        if (a.empty() || num <= a.top()) {
+            a.push(num);
+        }
+        else {
+            b.push(num);
+        }
+
+        if (a.size() > b.size() + 1) {
+            b.push(a.top());
+            a.pop();
+        }
+        else if (b.size() > a.size()) {
+            a.push(b.top());
+            b.pop();
+        }
+    }
+
+    int findMedian() {
+        return a.top();
+    }
+}

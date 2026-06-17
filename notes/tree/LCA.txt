@@ -1,0 +1,32 @@
+1- if you want to get the maximum path between two nodes they are going to the same third node so you can make the follow
+let first node = x, second = y, third = z;
+
+l1 = lca(x, y), l2 = lca(x, z), l3 = lca(y, z)
+
+then check whether is the different in these 3 will be your median
+
+if (l1 == l2) median = l3
+else if (l2 == l3) median = l1
+else median = l2
+
+then the maximum path is = to the maximum distance between the median and the initial node
+
+max intersection path = max(dis(median, x), dis(median, y), dis(median, z))
+
+2- if you have two paths and you want to get the maximum intersection path length between them you will make the follow
+
+first path from a -> b second one c -> d
+
+l1 = lca(a, b), l2 = lca(c, d)
+
+maxi = max(depth of l1, depth of l2)
+
+tmp[4] = {lca(a, c), lca(a, d), lca(b, c), lca(b, d)}
+
+sort(tmp, tmp + 4, (int & a, int & b) {
+	return depth of a > depth of b;
+});
+
+if (tmp[0] < maxi) return 0; // there is no intersection path between these two pathes
+else cout << dis(tmp[0], tmp[1]) + 1 << '\n'
+

@@ -1,0 +1,41 @@
+ll mult(ll a, ll b) {
+    return ((a % MOD) * (b % MOD)) % MOD;
+}
+
+ll add(ll a, ll b) {
+    return (a + b) % MOD;
+}
+
+ll sub(ll a, ll b) {
+    return (((a - b) % MOD) + MOD) % MOD;
+}
+
+ll powMod(ll a, ll b) {
+    ll res = 1;
+    while(b) {
+        if (b & 1) res = mult(res, a);
+        a = mult(a, a);
+        b >>= 1;
+    }
+    return res;
+}
+
+ll invMod(ll a) {
+    return powMod(a, MOD - 2);
+}
+
+const int N = 2e5 + 5;
+
+ll fact[N], inv[N];
+
+void pre() {
+    fact[0] = fact[1] = 1;
+    for (int i = 2; i < N; i++) fact[i] = mult(fact[i - 1], i);
+    inv[N - 1] = invMod(fact[N - 1]);
+    for (int i = N - 2; i >= 0; i--) inv[i] = mult(inv[i + 1], i + 1);
+}
+
+ll nCr(ll n, ll k) {
+    if (n < k || k < 0) return 0;
+    return mult(fact[n], mult(inv[k], inv[n - k]));
+}

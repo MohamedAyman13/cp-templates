@@ -1,0 +1,105 @@
+struct Node {
+    ll skip = 0, val = 0, lazyAdd = 0, lazyAssign = 0;
+    bool isLazyAdd = false, isLazyAssign = false;
+    Node() : val(skip) {};
+    Node(ll x) : val(x) {};
+
+    void assign(ll x, ll lq, ll rq) {
+        isLazyAssign = true;
+        lazyAdd = 0;
+        isLazyAdd = false;
+        val = (x * (rq - lq + 1));
+        lazyAssign = x;
+    }
+
+    void add(ll x, ll lq, ll rq) {
+        if (isLazyAssign) {
+            lazyAssign += x;
+        } else {
+            isLazyAdd = true;
+            lazyAdd += x;
+        }
+        val += x * (rq - lq + 1);
+    }
+};
+
+struct segmentTree {
+    private:
+        #define L 2 * node + 1
+        #define R 2 * node + 2
+        #define md (l + (r - l) / 2)
+        ll sz;
+        vector<Node> seg;
+
+        Node merge(Node &a, Node &b) {
+            Node res = Node();
+            res.val = a.val + b.val;
+            return res;
+        }
+
+        void build(int l, int r, int node, vector<int> & a) {
+            if (l == r) {
+                if (l < a.size()) {
+                    seg[node] = Node(a[l]);
+                }
+                return;
+            }
+            build(l, md, L, a);
+            build(md + 1, r, R, a);
+            seg[node] = merge(seg[L], seg[R]);
+        }
+
+        void propagate(int node, int l, int r) {
+            if ((!seg[node].isLazyAdd && !seg[node].isLazyAssign) || l == r) return;
+            if (seg[node].isLazyAssign) {
+                seg[L].assign(seg[node].lazyAssign, l, md);
+                seg[R].assign(seg[node].lazyAssign, md + 1, r);
+            }
+            if (seg[node].isLazyAdd) {
+                seg[L].add(seg[node].lazyAdd, l, md);
+                seg[R].add(seg[node].lazyAdd, md + 1, r);
+            }
+            seg[node].lazyAdd = seg[node].lazyAssign = seg[node].isLazyAdd = seg[node].isLazyAssign = 0;
+        }
+
+        void update(int l, int r, int node, int lq, int rq, int val) {
+            propagate(node, l, r);
+            if (l > rq || r < lq) return;
+            if (l >= lq && r <= rq) {
+                seg[node].add(val, l, r);
+                return;
+            }
+            update(l, md, L, lq, rq, val);
+            update(md + 1, r, R, lq, rq, val);
+            seg[node] = merge(seg[L], seg[R]);
+        }
+        
+        Node query(int l, int r, int node, int lq, int rq) {
+            propagate(node, l, r);
+            if (l > rq || r < lq) return Node();
+            if (l >= lq && r <= rq) return seg[node];
+            Node left = query(l, md, L, lq, rq);
+            Node right = query(md + 1, r, R, lq, rq);
+            return merge(left, right);
+        }
+
+    public:
+        segmentTree(vector<int> & a) {
+            int n = a.size();
+            sz = 1;
+            while(sz < n) sz *= 2;
+            seg.assign(2 * sz, Node());
+            build(0, sz - 1, 0, a);
+        }
+        void update(int l, int r, int val) {
+            update(0, sz - 1, 0, l, r, val);
+        }
+        ll query(int l, int r) {
+            return query(0, sz - 1, 0, l, r).val;
+        }
+
+        #undef L
+        #undef R
+        #undef md
+
+};

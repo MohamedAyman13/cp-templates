@@ -1,0 +1,73 @@
+struct Node {
+    ll skip = 0, val = 0;
+    Node() : val(skip) {};
+    Node(ll x) : val(x) {};
+    void set(ll x) {
+        val += x;
+    }
+};
+
+struct segmentTree {
+    private:
+        #define L 2 * node + 1
+        #define R 2 * node + 2
+        #define md (l + (r - l) / 2)
+        ll sz;
+        vector<Node> seg;
+
+        Node merge(Node &a, Node &b) {
+            Node res = Node();
+            res.val = a.val + b.val;
+            return res;
+        }
+
+        void build(int l, int r, int node, vector<int> & a) {
+            if (l == r) {
+                if (l < a.size()) {
+                    seg[node] = Node(a[l]);
+                }
+                return;
+            }
+            build(l, md, L, a);
+            build(md + 1, r, R, a);
+            seg[node] = merge(seg[L], seg[R]);
+        }
+
+        void update(int l, int r, int node, int idx, int val) {
+            if (l == r) {
+                seg[node].set(val);
+                return;
+            }
+            if (idx <= md) update(l, md, L, idx, val);
+            else update(md + 1, r, R, idx, val);
+            seg[node] = merge(seg[L], seg[R]);
+        }
+
+        Node query(int l, int r, int node, int lq, int rq) {
+            if (l > rq || r < lq) return Node();
+            if (l >= lq && r <= rq) return seg[node];
+            Node left = query(l, md, L, lq, rq);
+            Node right = query(md + 1, r, R, lq, rq);
+            return merge(left, right);
+        }
+
+    public:
+        segmentTree(vector<int> & a) {
+            int n = a.size();
+            sz = 1;
+            while(sz < n) sz *= 2;
+            seg.assign(2 * sz, Node());
+            build(0, sz - 1, 0, a);
+        }
+        void update(int idx, int val) {
+            update(0, sz - 1, 0, idx, val);
+        }
+        ll query(int l, int r) {
+            return query(0, sz - 1, 0, l, r).val;
+        }
+
+        #undef L
+        #undef R
+        #undef md
+
+};

@@ -1,0 +1,150 @@
+// without sparse table logic
+struct LCA {
+    int n, pw, timer;
+    vector<int> lvl, tin, tout;
+    vector<vector<int>> anc;
+    LCA(int n, int pw, vector<vector<int>> & adj) {
+        this->n = n;
+        this->pw = pw;
+        this->timer = 0;
+        lvl.assign(n + 1, 0);
+        tin.assign(n + 1, 0);
+        tout.assign(n + 1, 0);
+        anc.resize(n + 1, vector<int>(pw));
+        build(1, 1, adj);
+    }
+    void build(int v, int p, vector<vector<int>> & adj) {
+        tin[v] = ++timer;
+        anc[v][0] = p;
+        lvl[v] = lvl[p] + 1;
+        for (int i = 1; i < pw; i++) {
+            int par = anc[v][i - 1];
+            anc[v][i] = anc[par][i - 1];
+        }
+        for (int u : adj[v]) {
+            if (u == p) continue;
+            build(u, v, adj);
+        }
+        tout[v] = ++timer;
+    }
+    bool isAncestor(int u, int v) {
+        return tin[u] <= tin[v] && tout[u] >= tout[v];
+    }
+
+    int KthAncestor(int node, int k) {
+        for (int i = pw - 1; i >= 0; i--) {
+            if ((1LL << i) & k) node = anc[node][i];
+        }
+        return node;
+    }
+
+    int lca(int u, int v) {
+        if (isAncestor(u, v)) return u;
+        if (isAncestor(v, u)) return v;
+        if (lvl[u] < lvl[v]) swap(u, v);
+        u = KthAncestor(u, lvl[u] - lvl[v]);
+        for (int i = pw - 1; i >= 0; i--) {
+            if (anc[u][i] != anc[v][i]) {
+                u = anc[u][i], v = anc[v][i];
+            }
+        }
+        return anc[u][0];
+    }
+
+    int dis(int u, int v) {
+        int l = lca(u, v);
+        return lvl[u] + lvl[v] - 2 * lvl[l];
+    }
+};
+
+// with sparse table logic
+
+struct LCA {
+    int n, pw, timer;
+    ll skip;
+    vector<int> lvl, tin, tout;
+    vector<vector<int>> anc;
+    vector<vector<ll>> tablia;
+
+    LCA(int n, int pw, int skip, vector<vector<pair<int, int>>> & adj) {
+        this->n = n;
+        this->pw = pw;
+        this->skip = skip;
+        this->timer = 0;
+        lvl.assign(n + 1, 0);
+        tin.assign(n + 1, 0);
+        tout.assign(n + 1, 0);
+        anc.resize(n + 1, vector<int>(pw));
+        tablia.resize(n + 1, vector<ll>(pw));
+        build(1, 1, skip, 0, adj);
+    }
+
+    ll merge(ll a, ll b) {
+        return max(a, b);
+    }
+
+    void build(int v, int p, int val, ll cur, vector<vector<pair<int, int>>> & adj) {
+        tin[v] = ++timer;
+        anc[v][0] = p;
+        tablia[v][0] = val;
+        lvl[v] = lvl[p] + 1;
+        
+        for (int i = 1; i < pw; i++) {
+            int par = anc[v][i - 1];
+            anc[v][i] = anc[par][i - 1];
+            tablia[v][i] = merge(tablia[v][i - 1], tablia[par][i - 1]);
+        }
+        
+        for (auto & [u, cost] : adj[v]) {
+            if (u == p) continue;
+            build(u, v, cost, cur, adj); 
+        }
+        tout[v] = ++timer;
+    }
+
+    bool isAncestor(int u, int v) {
+        return tin[u] <= tin[v] && tout[u] >= tout[v];
+    }
+
+    int KthAncestor(int node, int k) {
+        for (int i = pw - 1; i >= 0; i--) {
+            if ((1LL << i) & k) node = anc[node][i];
+        }
+        return node;
+    }
+
+    int lca(int u, int v) {
+        if (isAncestor(u, v)) return u;
+        if (isAncestor(v, u)) return v;
+        if (lvl[u] < lvl[v]) swap(u, v);
+        u = KthAncestor(u, lvl[u] - lvl[v]);
+        if (u == v) return u;
+        for (int i = pw - 1; i >= 0; i--) {
+            if (anc[u][i] != anc[v][i]) {
+                u = anc[u][i], v = anc[v][i];
+            }
+        }
+        return anc[u][0];
+    }
+
+    int dis(int u, int v) {
+        int l = lca(u, v);
+        return lvl[u] + lvl[v] - 2 * lvl[l];
+    }
+
+    ll query(int v, int k) {
+        ll ans = skip;
+        for (int i = pw - 1; i >= 0; i--) {
+            if ((1LL << i) & k) {
+                ans = merge(ans, tablia[v][i]);
+                v = anc[v][i];
+            }
+        }
+        return ans;
+    }
+
+    ll getAns(int a, int b) {
+        int l = lca(a, b);
+        return merge(query(a, lvl[a] - lvl[l]), query(b, lvl[b] - lvl[l]));
+    }
+};

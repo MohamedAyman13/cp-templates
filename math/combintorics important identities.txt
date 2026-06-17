@@ -1,0 +1,50 @@
+1- nCk value from k = 1 to k = n is equal to 2^n, so
+nC0 + nC1 + nC2 + ..... + nCn = 2^n
+
+2- if I want only even ones, or only odd ones you can do 2^(n - 1)
+
+3- if the probability of a ball landing is not the same so it is not just 0.5 left and 0.5 right so the value of the probability that the ball will land on x is nCx * (prob of left)^(n - x) * (prob of right)^(x)
+
+total prob:
+int ans = 0;
+for (int i = 0; i <= n; i++) {
+	ans += nCi * (probability of left)^(n - k) * (probability of right)^k;
+}
+
+4- if I want the sum of the nCk^2 from k = 1 to k = n is equal to 2nCn
+nC0^2 + nC1^2 + nC2^2 + ..... + nCn^2 = 2nCn
+
+5- hookey stick identity: nCr = (n - 1)Cr + (n - 2)C(r - 1) + (n - 3)C(r - 2) + ..... + (n - r + 1)C0
+
+6- nCr = (r - 1)C(r - 1) + rC(r - 1) + (r + 1)C(r - 1) + ..... + (n - 1)C(r - 1)
+
+7- Fibonacci numbers: F0 = 0, F1 = 1, Fn = F(n - 1) + F(n - 2)
+F(n + 1) = nC0 + (n - 1)C 1 + (n - 2)C2 + (n - 3)C3 + ..... + rCr
+
+8- stars and bars: if we have n items and we want to distribute them into 3 students so that anyone can got any number of items so we will use stars and bars ...|......|......... dots is the items and bars is the dividers so the formula is: (n + k - 1)C(k - 1) and k is the number of bars which = number of students
+
+9- if we want to ensure that every student get at least a item from the items and a * number of students <= number of items
+we will subtract a * number of students from the number of items
+n = n - a * k;
+let m = n - a * k;
+the formula will be (m + k - 1)C(k - 1)
+
+10- summation of nCk * 2^k of k from 0 to n = 3^n
+
+11- Derangements which is how to order elements so that no element stay in the same place for example if you want to get an derangement of voe so evo will be a correct derangement but eov isn't derangement because o stays in the same place
+
+number of derangements Dn = (n - 1) * (D(n - 1) + D(n - 2)) or Dn = n * D(n - 1) + (-1)^n
+
+the first formula can be proven such that if we have a word from 4 letters and we want to add a new letter so we can put last letter in any where instead of last place so it won't be a derangement so we have n - 1 element to swap with and there is two options first one is when we swap last new letter with an exist letter so there is (n - 1) * D(n - 2) element because when we take one element so we have n - 2 letters we can get all their orders and multiply it by (n - 1) and there is a second case such that the element won't swap with the new letter but will swap with other elements so we have also (n - 1) elements to put the new element in and D(n - 1) way to arrange the other letters so the whole formula will be as shown Dn = (n - 1) * (D(n - 1) + D(n - 2))
+
+where D1 = 0, D2 = 1
+
+Dn is the nearest value to n!/e    Dn ~ n!/e
+
+12- Catalan numbers:
+recursive formula Cn = C0*C(n - 1) + C1*C(n - 2) + ..... C(n - 2)*C1 + C(n - 1)*C0
+where C0 = 1, C1 = C0*C0 = 1
+Cn = 1/(n + 1) * 2nCn
+Cn = 2nCn - 2nC(n - 1)
+
+the most important thing about Catalan numbers that there are two elements and we want to choose sequence of them so that the count of the second one is always smaller than or equal the first one for example the regular bracket expression (()) the number of ( must be larger than or equal to the number of ) in the sequence the whole sequence.

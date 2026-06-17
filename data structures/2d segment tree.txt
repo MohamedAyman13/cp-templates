@@ -1,0 +1,123 @@
+struct Node {
+    ll skip = 0, val = 0;
+    Node() : val(skip) {};
+    Node(ll x) : val(x) {};
+    void set(ll x) {
+        val += x;
+    }
+};
+
+struct segmentTree2D {
+    private:
+        #define LX 2 * nodex + 1
+        #define RX 2 * nodex + 2
+        #define mdx (lx + (rx - lx) / 2)
+        
+        #define LY 2 * nodey + 1
+        #define RY 2 * nodey + 2
+        #define mdy (ly + (ry - ly) / 2)
+
+        ll sz_x, sz_y;
+        vector<vector<Node>> seg;
+
+        Node merge(Node a, Node b) {
+            Node res = Node();
+            res.val = a.val + b.val;
+            return res;
+        }
+
+        void build_y(int lx, int rx, int nodex, int ly, int ry, int nodey, const vector<vector<int>> &a) {
+            if (ly == ry) {
+                if (lx == rx) {
+                    if (lx < a.size() && ly < a[0].size()) {
+                        seg[nodex][nodey] = Node(a[lx][ly]);
+                    }
+                } else {
+                    seg[nodex][nodey] = merge(seg[LX][nodey], seg[RX][nodey]);
+                }
+                return;
+            }
+            build_y(lx, rx, nodex, ly, mdy, LY, a);
+            build_y(lx, rx, nodex, mdy + 1, ry, RY, a);
+            seg[nodex][nodey] = merge(seg[nodex][LY], seg[nodex][RY]);
+        }
+        void build_x(int lx, int rx, int nodex, const vector<vector<int>> &a) {
+            if (lx != rx) {
+                build_x(lx, mdx, LX, a);
+                build_x(mdx + 1, rx, RX, a);
+            }
+            build_y(lx, rx, nodex, 0, sz_y - 1, 0, a);
+        }
+
+        void update_y(int lx, int rx, int nodex, int ly, int ry, int nodey, int idx_x, int idx_y, int val) {
+            if (ly == ry) {
+                if (lx == rx) {
+                    seg[nodex][nodey].set(val);
+                } else {
+                    seg[nodex][nodey] = merge(seg[LX][nodey], seg[RX][nodey]);
+                }
+                return;
+            }
+            if (idx_y <= mdy) update_y(lx, rx, nodex, ly, mdy, LY, idx_x, idx_y, val);
+            else update_y(lx, rx, nodex, mdy + 1, ry, RY, idx_x, idx_y, val);
+            
+            seg[nodex][nodey] = merge(seg[nodex][LY], seg[nodex][RY]);
+        }
+
+        void update_x(int lx, int rx, int nodex, int idx_x, int idx_y, int val) {
+            if (lx != rx) {
+                if (idx_x <= mdx) update_x(lx, mdx, LX, idx_x, idx_y, val);
+                else update_x(mdx + 1, rx, RX, idx_x, idx_y, val);
+            }
+            update_y(lx, rx, nodex, 0, sz_y - 1, 0, idx_x, idx_y, val);
+        }
+
+        Node query_y(int nodex, int ly, int ry, int nodey, int lqy, int rqy) {
+            if (ly > rqy || ry < lqy) return Node();
+            if (ly >= lqy && ry <= rqy) return seg[nodex][nodey];
+            
+            Node left = query_y(nodex, ly, mdy, LY, lqy, rqy);
+            Node right = query_y(nodex, mdy + 1, ry, RY, lqy, rqy);
+            return merge(left, right);
+        }
+
+        Node query_x(int lx, int rx, int nodex, int lqx, int rqx, int lqy, int rqy) {
+            if (lx > rqx || rx < lqx) return Node();
+            if (lx >= lqx && rx <= rqx) {
+                return query_y(nodex, 0, sz_y - 1, 0, lqy, rqy);
+            }
+            
+            Node left = query_x(lx, mdx, LX, lqx, rqx, lqy, rqy);
+            Node right = query_x(mdx + 1, rx, RX, lqx, rqx, lqy, rqy);
+            return merge(left, right);
+        }
+
+    public:
+        segmentTree2D(const vector<vector<int>> &a) {
+            int n = a.size();
+            int m = (n > 0) ? a[0].size() : 0;
+            sz_x = 1;
+            while(sz_x < n) sz_x *= 2;
+            sz_y = 1;
+            while(sz_y < m) sz_y *= 2;
+            seg.assign(2 * sz_x, vector<Node>(2 * sz_y, Node()));
+            if (n > 0 && m > 0) {
+                build_x(0, sz_x - 1, 0, a);
+            }
+        }
+
+        void update(int idx_x, int idx_y, int val) {
+            update_x(0, sz_x - 1, 0, idx_x, idx_y, val);
+        }
+        // lqx = x1, rqx = x2, lqy = y1, rqy = y2
+        ll query(int lqx, int rqx, int lqy, int rqy) {
+            return query_x(0, sz_x - 1, 0, lqx, rqx, lqy, rqy).val;
+        }
+
+        #undef LX
+        #undef RX
+        #undef mdx
+        #undef LY
+        #undef RY
+        #undef mdy
+};

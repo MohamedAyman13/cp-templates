@@ -1,0 +1,50 @@
+struct sqrtDecomposition {
+    int n, sq, sz;
+    vector<int> a, blk;
+    sqrtDecomposition(int n, vector<int> & a) {
+        this->n = n;
+        this->a = a;
+        sq = sqrt(n) + 1;
+        sz = (n + sq - 1) / sq;
+        blk.assign(sz, 1e9);
+    }
+    ll merge(ll a, ll b) {
+        return min(a, b);
+    }
+    void build() {
+        for (int i = 0; i < n; i++) {
+            blk[i / sq] = merge(blk[i / sq], a[i]);
+        }
+    }
+    ll query(int l, int r) {
+        ll ans = 0;
+        int b1 = l / sq;
+        int b2 = r / sq;
+        if (b1 == b2) {
+            for (int i = l; i <= r; i++) ans += a[i];
+        } else {
+            for (int i = l; i < (b1 + 1) * sq; i++) ans += a[i];
+            for (int i = b1 + 1; i < b2; i++) ans += blk[i];
+            for (int i = b2 * sq; i <= r; i++) ans += a[i];
+        }
+        return ans;
+    }
+    // for cumulative propreties like + - * / ^
+    // void update(int i, ll val) {
+    //     int b = i / sq;
+    //     blk[b] -= a[i];
+    //     a[i] = val;
+    //     blk[b] += a[i];
+    // }
+
+    // for non cumulative propreties like gcd lcm min max
+    void update(int i, ll val) {
+        int b = i / sq;
+        a[i] = val;
+        ll mini = LLONG_MAX;
+        int start = b * sq;
+        int end = min(start + sq - 1, n - 1);
+        for (int i = start; i <= end; i++) mini = merge(mini, a[i]);
+        blk[b] = mini;
+    }
+};

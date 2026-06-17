@@ -1,0 +1,50 @@
+template<typename T, class Compare>
+struct sliding2D {
+    int n, m, width, height;
+    vector<vector<T>> a;
+    Compare cmp; // defines priority
+
+    sliding2D(int n, int m, int width, int height, vector<vector<T>> &grid, Compare cmp)
+        : n(n), m(m), width(width), height(height), a(grid), cmp(cmp) {}
+
+    vector<vector<T>> build() {
+        vector<vector<T>> rowVal(n, vector<T>(m - width + 1));
+        // Row-wise (window = width)
+        for (int i = 0; i < n; i++) {
+            deque<int> dq;
+            for (int j = 0; j < m; j++) {
+                while (!dq.empty() && cmp(a[i][j], a[i][dq.back()])) dq.pop_back();
+                dq.push_back(j);
+                if (dq.front() <= j - width) dq.pop_front();
+                if (j >= width - 1) rowVal[i][j - width + 1] = a[i][dq.front()];
+            }
+        }
+        // Column-wise (window = height)
+        vector<vector<T>> res(n - height + 1, vector<T>(m - width + 1));
+        for (int j = 0; j < m - width + 1; j++) {
+            deque<int> dq;
+            for (int i = 0; i < n; i++) {
+                while (!dq.empty() && cmp(rowVal[i][j], rowVal[dq.back()][j])) dq.pop_back();
+                dq.push_back(i);
+                if (dq.front() <= i - height) dq.pop_front();
+                if (i >= height - 1) res[i - height + 1][j] = rowVal[dq.front()][j];
+            }
+        }
+
+        return res;
+    }
+};
+
+// for minimum sliding window
+// auto cmpMin = [](int a, int b) {
+//     return a <= b;
+// };
+
+// sliding2D<int, decltype(cmpMin)> sp(n, m, k, l, grid, cmpMin);
+
+// for maximum sliding window
+// auto cmpMax = [](int a, int b) {
+//     return a >= b;
+// };
+
+// sliding2D<int, decltype(cmpMax)> sp(n, m, k, l, grid, cmpMax);

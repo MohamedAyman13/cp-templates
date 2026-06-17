@@ -1,0 +1,53 @@
+const int N = 2e5 + 5;
+vector<int> Log(N);
+
+struct tabliaMometa {
+    int n;
+    int pw;
+    vector<vector<int>> tablia;
+    vector<int> s;
+    tabliaMometa(int n, int pw, vector<int> & a) {
+        this->n = n;
+        this->pw = pw;
+        tablia.resize(n + 10, vector<int>(pw + 1));
+        s = a;
+    }
+    int merge(int a, int b) {
+        return min(a, b);
+    }
+    void build() {
+        for (int i = 0; i < n; i++) {
+            tablia[i][0] = s[i];
+        }
+        for (int i = 1; i <= pw; i++) {
+            for (int j = 0; j <= n - (1 << i); j++) {
+                tablia[j][i] = merge(tablia[j][i - 1], tablia[j + (1 << (i - 1))][i - 1]);
+            }
+        }
+    }
+    // o(log(n))
+    int query(int l, int r) {
+        int sz = r - l + 1;
+        int ret = 1e9;
+        for (int i = 22; i >= 0; i--) {
+            if ((sz & (1 << i))) {
+                ret = merge(ret, tablia[l][i]);
+                l += (1 << i);
+            }
+        }
+        return ret;
+    }
+    // if you want to use the o(1) query you should run this code globally to not get TLE ^_^
+    void preCount() {
+        Log[1] = 0;
+        for(int i = 2; i < N; i++) {
+            Log[i]=Log[i>>1]+1;
+        }
+    }
+    // o(1) only works for non cumulative properties like min max gcd lcm but not work for sum multiply xor and so on
+    ll query2(int l,int r) {
+        int sz = r - l + 1;
+        int pw= Log[sz];
+        return merge(tablia[l][pw], tablia[r - (1 << pw) + 1][pw]);
+    }
+};
